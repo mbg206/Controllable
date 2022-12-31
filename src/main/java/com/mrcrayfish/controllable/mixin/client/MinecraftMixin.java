@@ -4,16 +4,13 @@ import com.mrcrayfish.controllable.Controllable;
 import com.mrcrayfish.controllable.client.ButtonBindings;
 import com.mrcrayfish.controllable.client.Controller;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 /**
  * Author: MrCrayfish
@@ -21,14 +18,9 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 @Mixin(Minecraft.class)
 public class MinecraftMixin
 {
-    @Shadow
-    public EntityPlayerSP player;
-
-    @ModifyArgs(method = "processKeyBinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;sendClickBlockToController(Z)V"))
-    private void sendClickBlockToController(Args args)
-    {
-        boolean leftClick = args.get(0);
-        args.set(0, leftClick || isLeftClicking());
+    @ModifyArg(method={"processKeyBinds"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/Minecraft;sendClickBlockToController(Z)V"))
+    private boolean sendClickBlockToController(boolean leftClick) {
+        return leftClick || MinecraftMixin.isLeftClicking();
     }
 
     @Redirect(method = "processKeyBinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"), slice = @Slice(
